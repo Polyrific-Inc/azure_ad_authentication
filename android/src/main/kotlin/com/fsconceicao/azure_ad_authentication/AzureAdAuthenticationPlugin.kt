@@ -15,7 +15,7 @@ class AzureAdAuthenticationPlugin : FlutterPlugin, ActivityAware {
 
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        msal = Msal(binding.applicationContext, binding.activity);
+        msal = Msal(binding.applicationContext, null);
         msalCallHandler = MsalHandlerImpl(msal!!)
         msalCallHandler.let {
             it?.startListening(binding.binaryMessenger)
