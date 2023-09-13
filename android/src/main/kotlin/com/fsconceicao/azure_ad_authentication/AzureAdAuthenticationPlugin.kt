@@ -36,13 +36,14 @@ class AzureAdAuthenticationPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        msal?.setActivity(binding.activity as FlutterActivity);
         if (msalCallHandler == null) {
             Log.wtf(TAG, "urlLauncher was never set.");
             return;
         }
-        msal.let {
-            it?.setActivity(binding.activity as FlutterActivity);
-        }
+        // msal.let {
+        //     it?.setActivity(binding.activity as FlutterActivity);
+        // }
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
