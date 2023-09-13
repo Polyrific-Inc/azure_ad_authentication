@@ -1,7 +1,6 @@
 package com.fsconceicao.azure_ad_authentication
 
 import android.util.Log
-import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -15,7 +14,7 @@ class AzureAdAuthenticationPlugin : FlutterPlugin, ActivityAware {
 
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        msal = Msal(binding.applicationContext, null);
+        msal = Msal(binding.applicationContext, null)
         msalCallHandler = MsalHandlerImpl(msal!!)
         msalCallHandler.let {
             it?.startListening(binding.binaryMessenger)
