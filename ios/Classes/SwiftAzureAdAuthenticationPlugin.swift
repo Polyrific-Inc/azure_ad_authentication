@@ -95,8 +95,7 @@ extension SwiftAzureAdAuthenticationPlugin {
                 }
             }
             
-            // disable because need to save the session
-            //removeAccount(application)
+            removeAccount(application)
             
             let interactiveParameters = MSALInteractiveTokenParameters(scopes: scopes, webviewParameters: webviewParameters)
             if let promptType = SwiftAzureAdAuthenticationPlugin.promptType, promptType == "select_account" {
