@@ -15,8 +15,6 @@ import java.util.*
 class MsalHandlerImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
     private val TAG = "MsalHandlerImpl"
 
-    private var promptType = "select_account"
-
     @Nullable
     private var channel: MethodChannel? = null
 
@@ -45,8 +43,6 @@ class MsalHandlerImpl(private val msal: Msal) : MethodChannel.MethodCallHandler 
         val scopesArg: ArrayList<String>? = call.argument("scopes")
         val scopes: Array<String>? = scopesArg?.toTypedArray()
         val clientId: String? = call.argument("clientId")
-
-        promptType = call.argument("promptType") ?: "select_account"
         //our code
         when (call.method) {
             "initialize" -> {
@@ -163,25 +159,19 @@ class MsalHandlerImpl(private val msal: Msal) : MethodChannel.MethodCallHandler 
             result.error("NO_SCOPE", "Call must include a scope", null)
             return
         }
-        
-        var prompt = Prompt.LOGIN
 
-        if(promptType == "select_account") {
-            prompt = Prompt.SELECT_ACCOUNT
-        }
-        // disable because need to save the session
         //remove old accounts
-        // while (msal.adAuthentication.accounts.any())
-        //     msal.adAuthentication.removeAccount(msal.adAuthentication.accounts.first())
+        while (msal.adAuthentication.accounts.any())
+            msal.adAuthentication.removeAccount(msal.adAuthentication.accounts.first())
 
 
         //acquire the token
 
         msal.activity.let {
             val builder = AcquireTokenParameters.Builder()
-            builder.startAuthorizationFromActivity(it)
+            builder.startAuthorizationFromActivity(msal.activity)
                 .withScopes(scopes.toList())
-                .withPrompt(prompt)
+                .withPrompt(Prompt.LOGIN)
                 .withCallback(msal.getAuthCallback(result))
             val acquireTokenParameters = builder.build()
             msal.adAuthentication.acquireToken(acquireTokenParameters)

@@ -8,8 +8,6 @@ public class SwiftAzureAdAuthenticationPlugin: NSObject, FlutterPlugin {
     static var clientId : String = ""
     static var authority : String = ""
     static var redirectUri: String?;
-    static var promptType: String?;
-    static var useWebBrowserSession: Bool = true;
     
     static let kCurrentAccountIdentifier = "MSALCurrentAccountIdentifier"
     
@@ -29,9 +27,6 @@ public class SwiftAzureAdAuthenticationPlugin: NSObject, FlutterPlugin {
         let clientId = dict["clientId"] as? String ?? ""
         let authority = dict["authority"] as? String ?? ""
         let redirectUri = dict["redirectUri"] as? String ?? nil
-
-        SwiftAzureAdAuthenticationPlugin.promptType = dict["promptType"] as? String ?? nil
-        SwiftAzureAdAuthenticationPlugin.useWebBrowserSession = (dict["useWebBrowserSession"] as? String ?? "true").lowercased() == "true"
         
         switch( call.method ){
         case "initialize": initialize(clientId: clientId, authority: authority, redirectUri: redirectUri, result: result)
@@ -85,23 +80,17 @@ extension SwiftAzureAdAuthenticationPlugin {
     {
         if let application = getApplication(result: result){
             
-            // disabled from original lib
+            
            // let viewController: UIViewController = UIApplication.shared.keyWindow!.rootViewController!
             let viewController: UIViewController = UIViewController.keyViewController!
             let webviewParameters = MSALWebviewParameters(authPresentationViewController: viewController)
-            if(!SwiftAzureAdAuthenticationPlugin.useWebBrowserSession) {
-                if #available(iOS 13.0, *) {
-                    webviewParameters.prefersEphemeralWebBrowserSession = true
-                }
+            if #available(iOS 13.0, *) {
+                webviewParameters.prefersEphemeralWebBrowserSession = true
             }
             
-            // disable because need to save the session
-            //removeAccount(application)
+            removeAccount(application)
             
             let interactiveParameters = MSALInteractiveTokenParameters(scopes: scopes, webviewParameters: webviewParameters)
-            if let promptType = SwiftAzureAdAuthenticationPlugin.promptType, promptType == "select_account" {
-                interactiveParameters.promptType = MSALPromptType.selectAccount
-            }
             
             application.acquireToken(with: interactiveParameters, completionBlock: { (msalresult, error) in
                 guard let authResult = msalresult, error == nil else {
@@ -216,7 +205,7 @@ extension SwiftAzureAdAuthenticationPlugin {
                 
                 clearCurrentAccount()
                 try application.remove(accountToDelete)
-                //removeAccount(application)
+                removeAccount(application)
             } catch {
                 result(FlutterError(code: "CONFIG_ERROR", message: "Unable get remove accounts", details: nil))
                 return
@@ -320,7 +309,6 @@ extension SwiftAzureAdAuthenticationPlugin {
         if let application = try? MSALPublicClientApplication(configuration: config)
         {
             // application.validateAuthority = false
-            MSALGlobalConfig.brokerAvailability = .none;
             return application
         }else{
             result(FlutterError(code: "CONFIG_ERROR", message: "Unable to create MSALPublicClientApplication", details: nil))
